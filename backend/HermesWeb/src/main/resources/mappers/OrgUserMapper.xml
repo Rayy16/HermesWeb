@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.hermes.mapper.OrgUserMapper">
+    <select id="selectOrgUserByUidAndOrgId" resultType="com.hermes.entity.OrgUserInfo">
+        select * from org_user_info
+        where uid = #{uid} and org_id = #{orgId};
+    </select>
+    <select id="selectOrgUsersByConds" resultType="com.hermes.entity.OrgUserInfo">
+        select * from org_user_info
+        <where>
+            <if test="conds != null">
+                <if test="conds.uid != null">and uid = #{conds.uid}</if>
+                <if test="conds.orgId != null">and org_id = #{conds.orgId}</if>
+                <if test="conds.orgRole != null">and org_role = #{conds.orgRole}</if>
+            </if>
+        </where>
+        <if test="page != null">
+            limit #{page.limit} offset #{page.offset}
+        </if>
+    </select>
+
+    <insert id="insertOrgUser">
+        insert into org_user_info
+        (
+            uid, org_id, org_role,
+            create_time, update_time
+        )
+        value
+        (
+            #{uid}, #{orgId}, #{orgRole},
+            now(), now()
+        )
+    </insert>
+
+    <update id="updateOrgUser">
+        update org_user_info
+        <set>
+            <if test="orgRole != null">org_role = #{orgRole}</if>
+            update_time = now(),
+        </set>
+        where uid = #{uid} and org_id = #{orgId}
+    </update>
+
+    <delete id="deleteOrgUser">
+        delete from org_user_info where uid = #{uid} and org_id = #{orgId}
+    </delete>
+
+    <delete id="batchDeleteOrgUserByOrgId">
+        delete from org_user_info where org_id = #{orgId}
+    </delete>
+
+    <select id="countByConds" resultType="java.lang.Integer">
+        select count(*) from org_user_info
+        <where>
+            <if test="conds != null">
+                <if test="conds.uid != null">and uid = #{conds.uid}</if>
+                <if test="conds.orgId != null">and org_id = #{conds.orgId}</if>
+                <if test="conds.orgRole != null">and org_role = #{conds.orgRole}</if>
+            </if>
+        </where>
+    </select>
+</mapper>

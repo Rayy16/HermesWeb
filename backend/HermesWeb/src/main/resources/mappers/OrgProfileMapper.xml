@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.hermes.mapper.OrgProfileMapper">
+    <select id="selectOrgProfileById" resultType="com.hermes.entity.OrgProfileInfo">
+        select * from org_profile_info where id = #{id}
+    </select>
+    <select id="selectOrgsProfileByConds" resultType="com.hermes.entity.OrgProfileInfo">
+        select * from org_profile_info
+        <where>
+            <if test="conds != null">
+                <if test="conds.id != null">and id = #{conds.id}</if>
+                <if test="conds.orgName != null">and org_name = #{conds.orgName}</if>
+                <if test="conds.isDeleted != null">and is_deleted = #{conds.isDeleted}</if>
+            </if>
+        </where>
+        <if test="page != null">
+            limit #{page.limit} offset #{page.offset}
+        </if>
+    </select>
+    <insert id="insertOrgProfile" useGeneratedKeys="true" keyProperty="id">
+        insert into org_profile_info
+        (
+            org_name,
+            org_describe,
+            is_deleted, create_time, update_time, delete_time
+        )
+        value
+        (
+            #{orgName},
+            <if test="orgDescribe != null">#{orgDescribe}</if>
+            <if test="orgDescribe == null">''</if>,
+            false, now(), now(), null
+        )
+    </insert>
+    <update id="updateOrgProfile">
+        update org_profile_info
+        <set>
+            <if test="orgName != null">org_name = #{orgName}, </if>
+            <if test="orgDescribe != null">org_describe = #{orgDescribe}, </if>
+            <if test="isDeleted != null">is_deleted = #{isDeleted}, </if>
+            update_time = now(),
+        </set>
+        where id = #{id}
+    </update>
+    <update id="softDeleteById">
+        update org_profile_info
+        set
+            is_deleted = true,
+            delete_time = now()
+        where id = #{id} and is_deleted != true;
+    </update>
+    <select id="countByConds" resultType="java.lang.Integer">
+        select count(*) from org_profile_info
+        <where>
+            <if test="conds != null">
+                <if test="conds.id != null">and id = #{conds.id}</if>
+                <if test="conds.orgName != null">and org_name = #{conds.orgName}</if>
+                <if test="conds.isDeleted != null">and is_deleted = #{conds.isDeleted}</if>
+            </if>
+        </where>
+    </select>
+</mapper>

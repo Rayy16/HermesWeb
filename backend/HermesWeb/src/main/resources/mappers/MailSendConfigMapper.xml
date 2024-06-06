@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.hermes.mapper.MailSendConfigMapper">
+    <select id="selectMailSendConfigByTemplateType" resultType="com.hermes.entity.MailSendConfig">
+        select * from mail_send_config
+        where template_type = #{templateType}
+    </select>
+
+    <insert id="insertMailSendConfig">
+        insert into mail_send_config
+        (
+            template_type, template_subject, template_content,
+            is_deleted, create_time, update_time, delete_time
+        )
+            value
+            (
+             #{templateType}, #{templateSubject}, #{templateContent},
+             false, now(), now(), null
+                )
+    </insert>
+
+    <update id="updateMailSendConfig">
+        update mail_send_config
+        <set>
+            <if test="templateSubject != null">template_subject = #{templateSubject}, </if>
+            <if test="templateContent != null">template_content = #{templateContent}, </if>
+            <if test="isDeleted != null">is_deleted = #{isDeleted}, </if>
+            update_time = now(),
+        </set>
+        where template_type = #{templateType}
+    </update>
+
+    <update id="softDeleteMailSendConfig">
+        update mail_send_config
+        set
+            is_deleted = true,
+            delete_time = now()
+        where template_type = #{templateType}
+    </update>
+</mapper>
