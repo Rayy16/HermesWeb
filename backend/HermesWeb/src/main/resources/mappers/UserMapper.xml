@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.hermes.mapper.UserMapper">
+
+    <select id="selectUserByUid" resultType="com.hermes.entity.UserInfo">
+        select * from user_info where uid = #{uid}
+    </select>
+    <select id="selectUsersByUids" resultType="com.hermes.entity.UserInfo">
+        select * from user_info
+        where uid in (
+            <foreach collection="uids" item="uid" separator=",">
+                #{uid}
+            </foreach>
+        )
+        <if test="page != null">
+            limit #{page.limit} offset #{page.offset}
+        </if>
+
+    </select>
+    <select id="selectUsersByConds" resultType="com.hermes.entity.UserInfo">
+        select * from user_info
+        <where>
+            <if test="conds != null">
+                <if test="conds.uid != null">and uid = #{conds.uid}</if>
+                <if test="conds.userName != null">and user_name = #{conds.userName}</if>
+                <if test="conds.emailAccount != null">and email_account = #{conds.emailAccount}</if>
+                <if test="conds.password != null">and password = #{conds.password}</if>
+                <if test="conds.doubleCheck != null">and double_check = #{conds.doubleCheck}</if>
+                <if test="conds.iconLink != null">and icon_link = #{conds.iconLink}</if>
+                <if test="conds.userRole != null">and user_role = #{conds.userRole}</if>
+                <if test="conds.isDeleted != null">and is_deleted = #{conds.isDeleted}</if>
+            </if>
+        </where>
+        <if test="page != null">
+            limit #{page.limit} offset #{page.offset}
+        </if>
+    </select>
+    <select id="selectUsersByEmailAccounts" resultType="com.hermes.entity.UserInfo">
+        select * from user_info
+        <where>
+            1 = 0
+            <if test="emailAccounts != null">
+                or email_account in (
+                    <foreach collection="emailAccounts" item="emailAccount" separator=",">
+                        #{emailAccount}
+                    </foreach>
+                ) and is_delete != true;
+            </if>
+        </where>
+    </select>
+    <insert id="insertUser">
+        insert into user_info
+        (
+            uid, user_name, email_account, password,
+            double_check, icon_link, user_role,
+            is_deleted, create_time, update_time, delete_time
+        )
+        value
+        (
+            #{uid}, #{userName}, #{emailAccount}, #{password},
+            <if test="doubleCheck !=null">#{doubleCheck}</if>
+            <if test="doubleCheck == null">false</if>,
+            <if test="iconLink != null">#{iconLink}</if>
+            <if test="iconLink == null">''</if>,
+            <if test="userRole != null">#{userRole}</if>
+            <if test="userRole == null">3</if>,
+            false, now(), now(), null
+        )
+    </insert>
+
+    <update id="updateUser">
+        update user_info
+        <set>
+            <if test="userName != null">user_name = #{userName}, </if>
+            <if test="emailAccount != null">email_account = #{emailAccount}, </if>
+            <if test="password != null">password = #{password}, </if>
+            <if test="doubleCheck != null">double_check = #{doubleCheck}, </if>
+            <if test="iconLink != null">icon_link = #{iconLink}, </if>
+            <if test="userRole != null">user_role = #{userRole}, </if>
+            <if test="isDeleted != null">is_deleted = #{isDeleted}, </if>
+            update_time = now(),
+        </set>
+        where uid = #{uid}
+    </update>
+
+    <update id="softDeleteByUid">
+        update user_info
+        set
+            is_deleted = true,
+            delete_time = now()
+        where uid = #{uid} and is_deleted != true
+    </update>
+
+    <update id="softDeleteByUids">
+        update user_info
+        set
+            is_deleted = true,
+            delete_time = now()
+        where 1 = 0
+            <if test="uids != null">
+                or uid in
+                (
+                <foreach collection="uids" item="uid" separator=",">
+                    #{uid}
+                </foreach>
+                ) and is_deleted != true
+            </if>
+    </update>
+
+    <select id="countByConds" resultType="java.lang.Integer">
+        select count(*) from user_info
+        <where>
+            <if test="conds != null">
+                <if test="conds.uid != null">and uid = #{conds.uid}</if>
+                <if test="conds.userName != null">and user_name = #{conds.userName}</if>
+                <if test="conds.emailAccount != null">and email_account = #{conds.emailAccount}</if>
+                <if test="conds.password != null">and password = #{conds.password}</if>
+                <if test="conds.doubleCheck != null">and double_check = #{conds.doubleCheck}</if>
+                <if test="conds.iconLink != null">and icon_link = #{conds.iconLink}</if>
+                <if test="conds.userRole != null">and user_role = #{conds.userRole}</if>
+                <if test="conds.isDeleted != null">and is_deleted = #{conds.isDeleted}</if>
+            </if>
+        </where>
+    </select>
+</mapper>
