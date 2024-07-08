@@ -2,6 +2,7 @@ package com.hermes.service.Impl;
 
 import com.hermes.common.PageInfo;
 import com.hermes.common.enum_type.UserRole;
+import com.hermes.common.exception.BaseException;
 import com.hermes.common.helper.SecurityHelper;
 import com.hermes.dto.PageQueryDTO;
 import com.hermes.dto.UserInfoDTO;
@@ -35,7 +36,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public Boolean checkUserRole(String uid, UserRole threshold) {
         UserInfo userInfo = userMapper.selectUserByUid(uid);
-        return userInfo.getUserRole() >= threshold.getCode();
+        return userInfo.getUserRole() <= threshold.getCode();
     }
 
     @Override
@@ -58,7 +59,7 @@ public class UserServiceImpl implements UserService {
     null);
 
         if (userInfos == null || userInfos.isEmpty()) {
-            throw new RuntimeException("email account <" + emailAccount + "> is already registry, but user can not be login");
+            throw new BaseException("email account <" + emailAccount + "> is already registry, but user can not be login");
         }
 
         return SecurityHelper.matches(userInfos.get(0).getPassword(), decryptedPassword);

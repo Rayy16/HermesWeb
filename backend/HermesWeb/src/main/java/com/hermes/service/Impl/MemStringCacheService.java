@@ -13,7 +13,6 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class MemStringCacheService implements StringCacheService {
     final private static ConcurrentHashMap<String, WrapExpire> data = new ConcurrentHashMap<>();
-
     @Override
     public String get(String key) {
         WrapExpire wrapExpire = data.get(key);

@@ -1,5 +1,6 @@
 package com.hermes.common.helper;
 
+import com.hermes.common.exception.BaseException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -21,7 +22,7 @@ public class JwtTokenHelper {
             SecretKey secretKey = keyGenerator.generateKey();
             return Base64.getEncoder().encodeToString(secretKey.getEncoded());
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Unable to generate secret key", e);
+            throw new BaseException("Unable to generate secret key", e);
         }
     }
     public static String createToken(Map<String, Object> claims, long expireTime) {
