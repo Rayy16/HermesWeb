@@ -2,6 +2,7 @@ package com.hermes.service.Impl;
 
 import com.hermes.common.enum_type.MailFilterAction;
 import com.hermes.common.enum_type.TemplateType;
+import com.hermes.common.exception.BaseException;
 import com.hermes.entity.MailSendConfig;
 import com.hermes.entity.MailSendFilter;
 import com.hermes.entity.UserInfo;
@@ -9,7 +10,7 @@ import com.hermes.mapper.MailSendConfigMapper;
 import com.hermes.mapper.MailSendFilterMapper;
 import com.hermes.mapper.UserMapper;
 import com.hermes.service.MailSendService;
-import com.hermes.vo.MailTemplateDetailVO;
+import com.hermes.dto.MailTemplateDetailDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,7 +51,7 @@ public class MailSendServiceImpl implements MailSendService {
             mailSender.send(messageHelper.getMimeMessage());
             log.info("subject: <{}> send from {} to {} success", subject, from, tos);
         } catch (MessagingException e) {
-            throw new RuntimeException(e);
+            throw new BaseException(e.getMessage(), e.getCause());
         }
     }
 
@@ -116,9 +117,9 @@ public class MailSendServiceImpl implements MailSendService {
         return false;
     }
     @Override
-    public MailTemplateDetailVO getMailTemplateDetailByTemplateType(TemplateType templateType) {
+    public MailTemplateDetailDTO getMailTemplateDetailByTemplateType(TemplateType templateType) {
         MailSendConfig mailSendConfig = mailSendConfigMapper.selectMailSendConfigByTemplateType(templateType.getType());
-        return MailTemplateDetailVO.builder().
+        return MailTemplateDetailDTO.builder().
                 templateType(mailSendConfig.getTemplateType()).
                 subject(mailSendConfig.getTemplateSubject()).
                 content(mailSendConfig.getTemplateContent()).build();

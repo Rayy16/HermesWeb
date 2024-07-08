@@ -1,5 +1,6 @@
 package com.hermes.service.Impl;
 
+import com.hermes.common.exception.BaseException;
 import com.hermes.service.SecretKeyService;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -7,6 +8,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Cipher;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -51,7 +53,30 @@ public class SecretKeyServiceImpl implements SecretKeyService {
             byte[] decodedBytes = Base64.getDecoder().decode(encryptedData);
             return new String(cipher.doFinal(decodedBytes));
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new BaseException(e.getMessage(), e.getCause());
+        }
+    }
+
+    @Override
+    public PublicKey getPublicKeyAndCheckVersion(String version) {
+        synchronized (SecretKeyServiceImpl.class) {
+            if(!key.getVersion().equals(version)) {
+                return null;
+            }
+            return key.getSecretKey().getPublic();
+        }
+    }
+
+    @Override
+    public String encryptData(PublicKey publicKey, String rawData) {
+        try {
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+            byte[] encryptedBytes = cipher.doFinal(rawData.getBytes(StandardCharsets.UTF_8));
+            return Base64.getEncoder().encodeToString(encryptedBytes);
+        } catch (Exception e) {
+            log.error("Error encrypting data", e);
+            throw new BaseException("Error encrypting data", e.getCause());
         }
     }
 
@@ -71,7 +96,7 @@ public class SecretKeyServiceImpl implements SecretKeyService {
             log.info("generate key with version: {}", version);
             return SecretKeyAndVersion.build(keyPair, version);
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+            throw new BaseException(e.getMessage(), e.getCause());
         }
     }
 

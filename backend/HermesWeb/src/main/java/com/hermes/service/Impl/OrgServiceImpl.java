@@ -3,6 +3,7 @@ package com.hermes.service.Impl;
 import com.hermes.common.enum_type.OrgRole;
 import com.hermes.common.PageInfo;
 import com.hermes.common.enum_type.UserRole;
+import com.hermes.common.exception.BaseException;
 import com.hermes.dto.OrgInfoDTO;
 import com.hermes.dto.PageQueryDTO;
 import com.hermes.entity.OrgProfileInfo;
@@ -113,12 +114,12 @@ public class OrgServiceImpl implements OrgService {
 
         OrgUserInfo orgUserInfo = orgUserMapper.selectOrgUserByUidAndOrgId(orgId, uid);
         if (orgUserInfo == null) {
-            throw new RuntimeException("unexpected org's user info for " + orgId + " - " + uid);
+            throw new BaseException("unexpected org's user info for " + orgId + " - " + uid);
         }
 
         if(orgUserInfo.getOrgRole().equals(OrgRole.ORG_MANAGER.getCode())) {
             if (checkGivenOrgSoleManager(orgId, uid)) {
-                throw new RuntimeException(String.format("user<%s> is the sole manager of org<%d>", uid, orgId));
+                throw new BaseException(String.format("remove failed, user<%s> is the sole manager of org<%d>", uid, orgId));
             }
         }
         orgUserMapper.deleteOrgUser(orgUserInfo);
@@ -168,7 +169,7 @@ public class OrgServiceImpl implements OrgService {
                 orgId(orgId).orgRole(OrgRole.ORG_MANAGER.getCode()).build();
         List<OrgUserInfo> orgUserInfos = orgUserMapper.selectOrgUsersByConds(queryOrgManagerConds, null);
         if (orgUserInfos == null || orgUserInfos.isEmpty()) {
-            throw new RuntimeException("unexpected org's user info for " + orgId);
+            throw new BaseException("unexpected org's user info for " + orgId);
         }
         if (orgUserInfos.size() != 1) {
             return false;
@@ -195,6 +196,17 @@ public class OrgServiceImpl implements OrgService {
         return false;
     }
 
+    @Override
+    public Boolean checkGivenOrgRole(Integer orgId, String uid, OrgRole orgRole) {
+        OrgUserInfo queryOrgPeopleConds = OrgUserInfo.builder().
+                orgId(orgId).uid(uid).build();
+        List<OrgUserInfo> orgUserInfos = orgUserMapper.selectOrgUsersByConds(queryOrgPeopleConds, null);
+        if (orgUserInfos == null || orgUserInfos.isEmpty()) {
+            throw new BaseException("unexpected org's user info for " + orgId);
+        }
+        return orgUserInfos.get(0).getOrgRole() <= orgRole.getCode();
+    }
+
     /**
      * auto upgrade user role if necessarily
      * */
@@ -210,21 +222,21 @@ public class OrgServiceImpl implements OrgService {
         log.info("try check org <{}> existed", orgId);
         OrgProfileInfo orgProfileInfo = orgProfileMapper.selectOrgProfileById(orgId);
         if (orgProfileInfo == null || orgProfileInfo.getIsDeleted()) {
-            throw new RuntimeException("org: " + orgId + "does not existed");
+            throw new BaseException("org: " + orgId + "does not existed");
         }
     }
     private void checkUserExisted(String uid) {
         log.info("try check user <{}> existed", uid);
         UserInfo userInfo = userMapper.selectUserByUid(uid);
         if (userInfo == null || userInfo.getIsDeleted()) {
-            throw new RuntimeException("user: " + uid + "does not existed");
+            throw new BaseException("user: " + uid + "does not existed");
         }
     }
     private void checkUsersExisted(List<String> uids) {
         log.info("try check users [{}] existed", String.join(",", uids));
         List<UserInfo> userInfos = userMapper.selectUsersByUids(uids, null);
         if (userInfos == null) {
-            throw new RuntimeException("Users: " + String.join(",", uids) + "does not exited");
+            throw new BaseException("Users: " + String.join(",", uids) + "does not exited");
         }
         Set<String> users = new HashSet<>();
         for (UserInfo userInfo: userInfos) {
@@ -235,7 +247,7 @@ public class OrgServiceImpl implements OrgService {
         }
         for (String uid: uids) {
             if (!users.contains(uid)) {
-                throw new RuntimeException("user: " + uid + "does not existed");
+                throw new BaseException("user: " + uid + "does not existed");
             }
         }
     }

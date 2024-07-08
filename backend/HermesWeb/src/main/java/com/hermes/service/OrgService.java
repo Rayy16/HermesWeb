@@ -34,4 +34,8 @@ public interface OrgService {
      * */
     Boolean checkAnyOrgSoleManager(String uid);
 
+    /**
+     * If the user's org role in the given org is above the threshold, return true
+     */
+    Boolean checkGivenOrgRole(Integer orgId, String uid, OrgRole orgRole);
 }
