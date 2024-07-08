@@ -1,6 +1,33 @@
 server:
   port: 8080
 
+hermes:
+  service:
+    secret-key:
+      duration: 1800000 # 1800000 # 30分钟，单位为毫秒
+    jwt-token:
+      token-ttl: 3600000
+      token-name: authorization
+  common:
+    verify-code:
+      duration: 1800000
+
 mybatis:
   mapper-locations: classpath:mappers/*xml
-  type-aliases-package:
+  type-aliases-package: com.hermes.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+spring:
+  datasource:
+    druid:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url:
+      username:
+      password:
+  mail:
+    host: smtp.qq.com
+    port: 587
+    username:
+    password:
