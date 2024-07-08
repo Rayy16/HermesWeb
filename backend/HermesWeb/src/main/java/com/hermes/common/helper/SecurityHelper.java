@@ -7,7 +7,12 @@ public class SecurityHelper {
     public static String encodeData(String rawData) {
         return passwordEncoder.encode(rawData);
     }
-    public static Boolean matches(String rawData, String decryptData) {
-        return passwordEncoder.matches(rawData, decryptData);
+    public static Boolean matches(String encodedData, String decryptData) {
+        return passwordEncoder.matches(decryptData, encodedData);
+    }
+
+    public static void main(String[] args) {
+        String encodeData = SecurityHelper.encodeData("123456");
+        System.out.println(SecurityHelper.matches(encodeData, "123456"));
     }
 }
